@@ -9,15 +9,13 @@ const nextConfig = {
       {
         protocol: "https",
         hostname: "i.postimg.cc",
-        pathname: "/**", 
+        pathname: "/**", // This allows any sub-paths under i.postimg.cc
       },
     ],
   },
 
   experimental: {
-    serverActions: {
-      bodySizeLimit: "5mb", // This should be valid if using Next.js experimental features
-    },
+    serverActions: true, // Enable server actions (experimental in Next.js 13+)
   },
 };
 
