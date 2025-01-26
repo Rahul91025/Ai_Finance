@@ -59,7 +59,7 @@ const Header = async () => {
             </a>
 
             <Link
-              href="/dashboard"
+              href="https://dash-512x.onrender.com/"
               className="text-gray-600 hover:text-blue-600 flex items-center gap-2"
             >
               <Button variant="outline">
