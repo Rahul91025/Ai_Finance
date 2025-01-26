@@ -28,12 +28,12 @@ const Header = async () => {
         <div className="hidden md:flex items-center space-x-8">
           <SignedOut>
             <a
-              href="#tokenization"
+              href="https://ai-user.onrender.com/"
               className="text-gray-600 hover:text-blue-600"
             >
               Queue Nav
             </a>
-            <a href="#user" className="text-gray-600 hover:text-blue-600">
+            <a href="https://token-mrv4.onrender.com/" className="text-gray-600 hover:text-blue-600">
               Prefill
             </a>
             <a href="#user" className="text-gray-600 hover:text-blue-600">
@@ -46,12 +46,12 @@ const Header = async () => {
         <div className="flex items-center space-x-4">
           <SignedIn>
             <a
-              href="#tokenization"
+             href="https://ai-user.onrender.com/"
               className="text-gray-600 hover:text-blue-600"
             >
               Queue Nav
             </a>
-            <a href="#user" className="text-gray-600 hover:text-blue-600">
+            <a href="https://token-mrv4.onrender.com/" className="text-gray-600 hover:text-blue-600">
               Prefill
             </a>
             <a href="#user" className="text-gray-600 hover:text-blue-600">
