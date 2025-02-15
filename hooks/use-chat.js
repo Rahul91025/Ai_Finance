@@ -11,7 +11,7 @@ export const useChat = () => {
   ]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [language, setLanguage] = useState("en");
+  const [language, setLanguage] = useState("en"); // Default language is English
 
   const languages = {
     en: "English",
