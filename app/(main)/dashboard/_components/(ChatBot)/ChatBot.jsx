@@ -10,21 +10,42 @@ import { useChat } from "@/hooks/use-chat";
 const ChatBot = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
-  const { messages, sendMessage, isLoading, error, language, setLanguage, languages } = useChat();
+  const {
+    messages,
+    sendMessage,
+    isLoading,
+    error,
+    language,
+    setLanguage,
+    languages,
+  } = useChat();
   const messagesEndRef = useRef(null);
 
-  // ✅ Fix: Ensure window is available before using it
   const [isMobile, setIsMobile] = useState(
     typeof window !== "undefined" ? window.innerWidth < 768 : false
   );
 
+  const [voices, setVoices] = useState([]);
+
   useEffect(() => {
-    if (typeof window === "undefined") return; // ✅ Prevent SSR errors
+    if (typeof window === "undefined") return;
 
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
     window.addEventListener("resize", checkMobile);
-    
     return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
+  useEffect(() => {
+    if ("speechSynthesis" in window) {
+      const availableVoices = speechSynthesis.getVoices();
+      setVoices(availableVoices);
+    }
+
+    // Listen for voice changes dynamically (useful for languages that load asynchronously)
+    window.speechSynthesis.onvoiceschanged = () => {
+      const availableVoices = speechSynthesis.getVoices();
+      setVoices(availableVoices);
+    };
   }, []);
 
   useEffect(() => {
@@ -32,6 +53,40 @@ const ChatBot = () => {
       messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages]);
+
+  // Text-to-Speech Functionality
+  const speakMessage = (text, lang) => {
+    if (typeof window !== "undefined" && "speechSynthesis" in window) {
+      const utterance = new SpeechSynthesisUtterance(text);
+
+      // Find voice that matches the desired language
+      const selectedVoice = voices.find((voice) => voice.lang.includes(lang));
+
+      if (selectedVoice) {
+        utterance.voice = selectedVoice;
+      } else {
+        // If no specific voice is found for the language, fall back to the default voice
+        utterance.voice = voices[0]; // Default to the first available voice
+      }
+
+      utterance.lang = lang;
+      speechSynthesis.speak(utterance);
+    }
+  };
+
+  // Function to handle when a message is sent
+  const handleSendMessage = (msg) => {
+    sendMessage(msg);
+
+    // Speak only bot's responses (messages with sender === 'bot')
+    if (
+      messages.length > 0 &&
+      messages[messages.length - 1]?.sender === "bot"
+    ) {
+      const botMessage = messages[messages.length - 1].text; // Get the latest bot message
+      speakMessage(botMessage, language);
+    }
+  };
 
   return (
     <>
@@ -58,14 +113,15 @@ const ChatBot = () => {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ type: "spring", duration: 0.5 }}
-            className={`fixed ${
-              isMobile ? "inset-4" : "bottom-24 right-6 w-96"
-            } bg-white rounded-2xl shadow-2xl flex flex-col z-50 overflow-hidden`}
+            className={`fixed ${isMobile ? "inset-4" : "bottom-24 right-6 w-96"} bg-white rounded-2xl shadow-2xl flex flex-col z-50 overflow-hidden`}
             style={{
-              height: isMinimized ? "auto" : isMobile ? "calc(100vh - 32px)" : "600px",
+              height: isMinimized
+                ? "auto"
+                : isMobile
+                  ? "calc(100vh - 32px)"
+                  : "600px",
             }}
           >
-            {/* Header */}
             <div className="p-4 bg-gradient-to-r from-blue-600 to-purple-600 rounded-t-2xl flex justify-between items-center">
               <div className="flex items-center space-x-2">
                 <Bot className="h-6 w-6 text-white" />
@@ -92,7 +148,6 @@ const ChatBot = () => {
               />
             </div>
 
-            {/* Chat Messages */}
             <AnimatePresence>
               {!isMinimized && (
                 <motion.div
@@ -121,9 +176,12 @@ const ChatBot = () => {
               )}
             </AnimatePresence>
 
-            {/* Chat Input */}
             {!isMinimized && (
-              <ChatInput onSend={sendMessage} isLoading={isLoading} placeholder="Type your message..." />
+              <ChatInput
+                onSend={handleSendMessage}
+                isLoading={isLoading}
+                placeholder="Type your message..."
+              />
             )}
           </motion.div>
         )}
