@@ -1,28 +1,28 @@
-"use client";
-import { useState, useEffect, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Bot } from "lucide-react";
-import ChatMessage from "./ChatMessage";
-import ChatControls from "./ChatControls";
-import ChatInput from "./ChatInput";
-import { useChat } from "@/hooks/use-chat";
+import { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Bot } from 'lucide-react';
+import ChatMessage from './ChatMessage';
+import ChatControls from './ChatControls';
+import ChatInput from './ChatInput';
+import { useChat } from '@/hooks/use-chat';
 
 const ChatBot = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
   const { messages, sendMessage, isLoading, error } = useChat();
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [isMobile, setIsMobile] = useState(false);
   const messagesEndRef = useRef(null);
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
-    window.addEventListener("resize", checkMobile);
-    return () => window.removeEventListener("resize", checkMobile);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
   useEffect(() => {
     if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   }, [messages]);
 
@@ -30,7 +30,7 @@ const ChatBot = () => {
     try {
       await sendMessage(message);
     } catch (err) {
-      console.error("Failed to send message:", err);
+      console.error('Failed to send message:', err);
     }
   };
 
@@ -58,29 +58,16 @@ const ChatBot = () => {
         {isOpen && (
           <motion.div
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
-            animate={{
-              opacity: 1,
-              scale: 1,
-              y: 0,
-            }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            transition={{ type: "spring", duration: 0.5 }}
-            className={`fixed ${
-              isMobile ? "inset-4" : "bottom-24 right-6 w-96"
-            } bg-white rounded-2xl shadow-2xl flex flex-col z-50 overflow-hidden`}
-            style={{
-              height: isMinimized
-                ? "auto"
-                : isMobile
-                  ? "calc(100vh - 32px)"
-                  : "600px",
-            }}
+            transition={{ type: 'spring', duration: 0.5 }}
+            className={`fixed ${isMobile ? 'inset-4' : 'bottom-24 right-6 w-96'} bg-white rounded-2xl shadow-2xl flex flex-col z-50`}
           >
             {/* Header */}
-            <div className="p-4 bg-gradient-to-r from-blue-600 to-purple-600 rounded-t-2xl flex justify-between items-center">
+            <motion.div className="p-4 bg-gradient-to-r from-blue-600 to-purple-600 rounded-t-2xl flex justify-between items-center">
               <div className="flex items-center space-x-2">
                 <Bot className="h-6 w-6 text-white" />
-                <h3 className="text-white font-semibold">Financial Advisor</h3>
+                <h3 className="text-white font-semibold">Social Media Assistant</h3>
               </div>
               <ChatControls
                 isMinimized={isMinimized}
@@ -90,19 +77,19 @@ const ChatBot = () => {
                   setIsMinimized(false);
                 }}
               />
-            </div>
+            </motion.div>
 
             {/* Messages */}
             <AnimatePresence>
               {!isMinimized && (
                 <motion.div
                   initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
+                  animate={{ opacity: 1, height: 'auto' }}
                   exit={{ opacity: 0, height: 0 }}
                   className="flex-1 overflow-y-auto p-4 space-y-4"
                 >
                   {messages.map((message, index) => (
-                    <ChatMessage key={index} message={message} />
+                    <ChatMessage key={index} message={message} delay={index * 0.1} />
                   ))}
                   {error && (
                     <div className="text-red-500 text-sm text-center p-2 bg-red-50 rounded-lg">
@@ -110,11 +97,11 @@ const ChatBot = () => {
                     </div>
                   )}
                   {isLoading && (
-                    <div className="flex space-x-2 items-center justify-center">
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex space-x-2 items-center justify-center">
                       <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" />
                       <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce delay-100" />
                       <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce delay-200" />
-                    </div>
+                    </motion.div>
                   )}
                   <div ref={messagesEndRef} />
                 </motion.div>
@@ -123,17 +110,13 @@ const ChatBot = () => {
 
             {/* Input */}
             {!isMinimized && (
-              <ChatInput
-                onSend={handleSend}
-                isLoading={isLoading}
-                placeholder="Ask about financial advice..."
-              />
+              <ChatInput onSend={handleSend} isLoading={isLoading} placeholder="Ask about social media analytics..." />
             )}
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Backdrop for mobile */}
+      {/* Backdrop */}
       <AnimatePresence>
         {isOpen && isMobile && (
           <motion.div
