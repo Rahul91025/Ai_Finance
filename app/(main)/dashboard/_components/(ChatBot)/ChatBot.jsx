@@ -10,7 +10,7 @@ import { useChat } from "@/hooks/use-chat";
 const ChatBot = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
-  const { messages, sendMessage, isLoading, error, language, setLanguage, languages } = useChat();
+  const { messages, sendMessage, isLoading, error } = useChat();
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const messagesEndRef = useRef(null);
 
@@ -26,8 +26,17 @@ const ChatBot = () => {
     }
   }, [messages]);
 
+  const handleSend = async (message) => {
+    try {
+      await sendMessage(message);
+    } catch (err) {
+      console.error("Failed to send message:", err);
+    }
+  };
+
   return (
     <>
+      {/* Chat Button */}
       <AnimatePresence>
         {!isOpen && (
           <motion.button
@@ -44,34 +53,35 @@ const ChatBot = () => {
         )}
       </AnimatePresence>
 
+      {/* Chat Window */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
+            animate={{
+              opacity: 1,
+              scale: 1,
+              y: 0,
+            }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ type: "spring", duration: 0.5 }}
-            className={`fixed ${isMobile ? "inset-4" : "bottom-24 right-6 w-96"} bg-white rounded-2xl shadow-2xl flex flex-col z-50 overflow-hidden`}
+            className={`fixed ${
+              isMobile ? "inset-4" : "bottom-24 right-6 w-96"
+            } bg-white rounded-2xl shadow-2xl flex flex-col z-50 overflow-hidden`}
             style={{
-              height: isMinimized ? "auto" : isMobile ? "calc(100vh - 32px)" : "600px",
+              height: isMinimized
+                ? "auto"
+                : isMobile
+                  ? "calc(100vh - 32px)"
+                  : "600px",
             }}
           >
+            {/* Header */}
             <div className="p-4 bg-gradient-to-r from-blue-600 to-purple-600 rounded-t-2xl flex justify-between items-center">
               <div className="flex items-center space-x-2">
                 <Bot className="h-6 w-6 text-white" />
-                <h3 className="text-white font-semibold">Chat Assistant</h3>
+                <h3 className="text-white font-semibold">Financial Advisor</h3>
               </div>
-              <select
-                className="bg-white text-black rounded p-1"
-                value={language}
-                onChange={(e) => setLanguage(e.target.value)}
-              >
-                {Object.entries(languages).map(([code, name]) => (
-                  <option key={code} value={code}>
-                    {name}
-                  </option>
-                ))}
-              </select>
               <ChatControls
                 isMinimized={isMinimized}
                 onMinimize={() => setIsMinimized(!isMinimized)}
@@ -82,6 +92,7 @@ const ChatBot = () => {
               />
             </div>
 
+            {/* Messages */}
             <AnimatePresence>
               {!isMinimized && (
                 <motion.div
@@ -110,14 +121,28 @@ const ChatBot = () => {
               )}
             </AnimatePresence>
 
+            {/* Input */}
             {!isMinimized && (
               <ChatInput
-                onSend={sendMessage}
+                onSend={handleSend}
                 isLoading={isLoading}
-                placeholder="Type your message..."
+                placeholder="Ask about financial advice..."
               />
             )}
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Backdrop for mobile */}
+      <AnimatePresence>
+        {isOpen && isMobile && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 z-40"
+            onClick={() => setIsOpen(false)}
+          />
         )}
       </AnimatePresence>
     </>
