@@ -11,12 +11,19 @@ const ChatBot = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
   const { messages, sendMessage, isLoading, error, language, setLanguage, languages } = useChat();
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const messagesEndRef = useRef(null);
 
+  // ✅ Fix: Ensure window is available before using it
+  const [isMobile, setIsMobile] = useState(
+    typeof window !== "undefined" ? window.innerWidth < 768 : false
+  );
+
   useEffect(() => {
+    if (typeof window === "undefined") return; // ✅ Prevent SSR errors
+
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
     window.addEventListener("resize", checkMobile);
+    
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
@@ -51,11 +58,14 @@ const ChatBot = () => {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ type: "spring", duration: 0.5 }}
-            className={`fixed ${isMobile ? "inset-4" : "bottom-24 right-6 w-96"} bg-white rounded-2xl shadow-2xl flex flex-col z-50 overflow-hidden`}
+            className={`fixed ${
+              isMobile ? "inset-4" : "bottom-24 right-6 w-96"
+            } bg-white rounded-2xl shadow-2xl flex flex-col z-50 overflow-hidden`}
             style={{
               height: isMinimized ? "auto" : isMobile ? "calc(100vh - 32px)" : "600px",
             }}
           >
+            {/* Header */}
             <div className="p-4 bg-gradient-to-r from-blue-600 to-purple-600 rounded-t-2xl flex justify-between items-center">
               <div className="flex items-center space-x-2">
                 <Bot className="h-6 w-6 text-white" />
@@ -82,6 +92,7 @@ const ChatBot = () => {
               />
             </div>
 
+            {/* Chat Messages */}
             <AnimatePresence>
               {!isMinimized && (
                 <motion.div
@@ -110,12 +121,9 @@ const ChatBot = () => {
               )}
             </AnimatePresence>
 
+            {/* Chat Input */}
             {!isMinimized && (
-              <ChatInput
-                onSend={sendMessage}
-                isLoading={isLoading}
-                placeholder="Type your message..."
-              />
+              <ChatInput onSend={sendMessage} isLoading={isLoading} placeholder="Type your message..." />
             )}
           </motion.div>
         )}
