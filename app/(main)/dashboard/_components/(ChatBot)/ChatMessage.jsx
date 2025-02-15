@@ -1,9 +1,18 @@
+import { useEffect } from "react";
 import { motion } from "framer-motion";
 import { Bot, User } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 
-const ChatMessage = ({ message, delay = 0 }) => {
+const ChatMessage = ({ message, delay = 0, language }) => {
   const isUser = message.role === "user";
+
+  useEffect(() => {
+    if (!isUser) {
+      const utterance = new SpeechSynthesisUtterance(message.content);
+      utterance.lang = language || "en-US"; // Default to English if no language is selected
+      speechSynthesis.speak(utterance);
+    }
+  }, [message, language, isUser]);
 
   return (
     <motion.div
