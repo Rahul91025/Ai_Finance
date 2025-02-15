@@ -6,33 +6,46 @@ export const useChat = () => {
     {
       role: "assistant",
       content:
-        "Hi! I'm your Financial  analytics assistant. How can I help you today?",
+        "Hi! I'm your Financial analytics assistant. How can I help you today?",
     },
   ]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [language, setLanguage] = useState("en");
+
+  const languages = {
+    en: "English",
+    hi: "Hindi",
+    bn: "Bengali",
+    ta: "Tamil",
+    te: "Telugu",
+    mr: "Marathi",
+    gu: "Gujarati",
+    kn: "Kannada",
+    ml: "Malayalam",
+    pa: "Punjabi",
+  };
 
   const sendMessage = async (content) => {
     try {
       setIsLoading(true);
       setError(null);
 
-      // Add user message
       const userMessage = { role: "user", content };
       setMessages((prev) => [...prev, userMessage]);
 
-      // Validate API key
       const apiKey = "AIzaSyDFYQBGPfgOjM6b8S6zBb_18SC43L11g40";
       if (!apiKey) {
         throw new Error("Missing Gemini API key");
       }
 
-      // Initialize Gemini AI
       const genAI = new GoogleGenerativeAI(apiKey);
       const model = genAI.getGenerativeModel({ model: "gemini-pro" });
 
-      // Get response from Gemini
-      const result = await model.generateContent(content);
+      // Translate prompt to the selected language
+      const translatedPrompt = `Respond in ${languages[language]}: ${content}`;
+
+      const result = await model.generateContent(translatedPrompt);
       const response = await result.response;
       const text = await response.text();
 
@@ -40,7 +53,6 @@ export const useChat = () => {
         throw new Error("Empty response from AI");
       }
 
-      // Add assistant message
       const assistantMessage = { role: "assistant", content: text };
       setMessages((prev) => [...prev, assistantMessage]);
     } catch (err) {
@@ -63,5 +75,8 @@ export const useChat = () => {
     sendMessage,
     isLoading,
     error,
+    language,
+    setLanguage,
+    languages,
   };
 };
